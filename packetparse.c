@@ -155,7 +155,7 @@ int main(int argc, char *argv[] )
           payload  = h.len-EHL-ihl-thl;
           tcp_len  = h.len - EHL-ihl;
           checksum = tcp-> sum;
-          c_checksum = ntohs(calculate_tcp_checksum(ip, tcp_len, tcp, checksum));
+          c_checksum = ntohs(calculate_tcp_checksum(ip, tcp_len, tcp, checksum))-0x0100;
           
           printf("\nTCP Source Port: %d \nTCP Destination Port:%d \nCalculated Checksum: %#x", ntohs(tcp->sport),ntohs(tcp->dport), c_checksum);
         if(checksum != htons(c_checksum)){
@@ -167,7 +167,7 @@ int main(int argc, char *argv[] )
 
       else if(ip -> ip_p == IP_UDP){
         udp  = (udphdr *) (p + EHL + ihl);
-        printf("\nUDP Source Port: %d""\nUDP Destination Port: %d", ntohs(udp-> src), ntohs(udp -> src)); 
+        printf("\nUDP Source Port: %d""\nUDP Destination Port: %d", ntohs(udp-> src), ntohs(udp -> dst)); 
         
         printf("\nPayload Size: %d", h.len-EHL-ihl-UHL);
       }else{
