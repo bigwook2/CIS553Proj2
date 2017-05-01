@@ -82,16 +82,27 @@ int main(int argc, char *argv[] )
   int unknown_packets = 0;
   void exit();
   const char t_mode[2] = "-t";
-  char t_flag;
+
+  const char m_mode[2] = "-m";
+  char t_flag = 0; 
+  char m_flag = 0;
+  char print_flag = 1;
 
   if(argc == 3) {
-      if (strcmp(argv[2], t_mode) == 0){
+      if (strncmp(argv[2], t_mode, 2) == 0){
          strcpy(select_mail, "tcp"); 
          t_flag = 1;
-         printf("\n select mail changed: %s", select_mail);
+         printf("\nTCP FLOW MODE");
       }
+      else if (strncmp(argv[2],m_mode, 2) == 0){
+         strcpy(select_mail, "tcp"); 
+         m_flag = 1;
+         printf("\nEMAIL TRAFFIC MODE");
+      }
+
   }
-    printf("\n argc: %d, Argv: %s  ",argc, argv[2]);
+  print_flag = !(m_flag || t_flag);
+  //print_flag = 1;
    if( argc < 2  ){
     fprintf( stderr, "Usage: %s {pcap-file}\n", argv[0] );
     exit( 1 );
@@ -132,17 +143,21 @@ int main(int argc, char *argv[] )
       printf("\n\n ******* Packet Number %d *******", num_packets);
       ether = (ETHERNET *)(p);//skipping preamble
       /**********Ethernet Header Handling ****************/
-      printf("\nMac Destination: %02x : %02x : %02x: %02x: %02x: %02x", (ether->dst_mac[0]),( ether->dst_mac[1]),
-        (ether->dst_mac[2]), (ether->dst_mac[3]), (ether->dst_mac[4]),( ether->dst_mac[5]));
-      printf("\nMac Source:  %02x : %02x : %02x: %02x: %02x: %02x", (ether->src_mac[0]),( ether->src_mac[1]),
-        (ether->src_mac[2]), (ether->src_mac[3]), (ether->src_mac[4]),( ether->src_mac[5]));
-      u_short  etype = ntohs(ether->ether_type);
-      //printf("\nChecking offset: %d", offsetof(ETHERNET, ether_type));
-      printf("\nEthernet type: %04x",ntohs(ether->ether_type));
+      
+          u_short  etype = ntohs(ether->ether_type);
+        if(print_flag){  
+          printf("\nMac Destination: %02x : %02x : %02x: %02x: %02x: %02x", (ether->dst_mac[0]),( ether->dst_mac[1]),
+            (ether->dst_mac[2]), (ether->dst_mac[3]), (ether->dst_mac[4]),( ether->dst_mac[5]));
+          printf("\nMac Source:  %02x : %02x : %02x: %02x: %02x: %02x", (ether->src_mac[0]),( ether->src_mac[1]),
+            (ether->src_mac[2]), (ether->src_mac[3]), (ether->src_mac[4]),( ether->src_mac[5]));
+          //printf("\nChecking offset: %d", offsetof(ETHERNET, ether_type));
+          printf("\nEthernet type: %04x",ntohs(ether->ether_type));
+        }
       /*********IP Packet Handling ********************/
       if(etype != ETHER_IP){ 
          unknown_packets++; 
-          continue;};
+          continue;
+      }
       
       ip = (iphdr*)(p+14);//ethernet is 14 bytes
       ihl = IP_HL(ip)*4;
@@ -150,10 +165,12 @@ int main(int argc, char *argv[] )
           printf("invalid ip header");
           return -1;
        }
+        if(print_flag){  
+          printf("\nIP Source: %s ", inet_ntoa(ip-> ip_src));
+          
+          printf("\nIP Destination: %s ", inet_ntoa(ip-> ip_dst));
+        }
       
-      printf("\nIP Source: %s ", inet_ntoa(ip-> ip_src));
-      
-      printf("\nIP Destination: %s ", inet_ntoa(ip-> ip_dst));
       /*********TCP Handler ***********************/
       if(ip ->ip_p== IP_TCP){
           tcp = (tcphdr*)(p+EHL+ihl);
@@ -167,19 +184,24 @@ int main(int argc, char *argv[] )
           checksum = tcp-> sum;
           c_checksum = ntohs(calculate_tcp_checksum(ip, tcp_len, tcp, checksum))-0x0100;
           
-          printf("\nTCP Source Port: %d \nTCP Destination Port:%d \nCalculated Checksum: %#x", ntohs(tcp->sport),ntohs(tcp->dport), c_checksum);
-        if(checksum != htons(c_checksum)){
-           printf("\nChecksum calculation was incorrect--information is not lossless");
-           printf("\nExpected checksum: %#x", ntohs(checksum));
+        if(print_flag){  
+              printf("\nTCP Source Port: %d \nTCP Destination Port:%d \nCalculated Checksum: %#x", ntohs(tcp->sport),ntohs(tcp->dport), c_checksum);
+            if(checksum != htons(c_checksum)){
+               printf("\nChecksum calculation was incorrect--information is not lossless");
+               printf("\nExpected checksum: %#x", ntohs(checksum));
+            }
+            printf("\nPayload Size: %d", payload);
         }
-        printf("\nPayload Size: %d", payload);
       } 
 
       else if(ip -> ip_p == IP_UDP){
         udp  = (udphdr *) (p + EHL + ihl);
-        printf("\nUDP Source Port: %d""\nUDP Destination Port: %d", ntohs(udp-> src), ntohs(udp -> dst)); 
         
-        printf("\nPayload Size: %d", h.len-EHL-ihl-UHL);
+        if(print_flag){  
+            printf("\nUDP Source Port: %d""\nUDP Destination Port: %d", ntohs(udp-> src), ntohs(udp -> dst)); 
+            
+            printf("\nPayload Size: %d", h.len-EHL-ihl-UHL);
+        }
       }else{
 
         printf("\nPayload Size: %d", h.len-EHL-ihl);
@@ -187,8 +209,11 @@ int main(int argc, char *argv[] )
       }
 
   }
-  printf("\nNum of Unknown Packets: %d",unknown_packets);
-  printf("\nNumber of packets parsed: %d\n",num_packets);
+
+    if(print_flag){  
+      printf("\nNum of Unknown Packets: %d",unknown_packets);
+      printf("\nNumber of packets parsed: %d\n",num_packets);
+    }
     exit(0);
 }
 
