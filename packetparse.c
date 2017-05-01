@@ -81,8 +81,18 @@ int main(int argc, char *argv[] )
   int num_packets = 0;
   int unknown_packets = 0;
   void exit();
+  const char t_mode[2] = "-t";
+  char t_flag;
 
-   if( argc != 2 ){
+  if(argc == 3) {
+      if (strcmp(argv[2], t_mode) == 0){
+         strcpy(select_mail, "tcp"); 
+         t_flag = 1;
+         printf("\n select mail changed: %s", select_mail);
+      }
+  }
+    printf("\n argc: %d, Argv: %s  ",argc, argv[2]);
+   if( argc < 2  ){
     fprintf( stderr, "Usage: %s {pcap-file}\n", argv[0] );
     exit( 1 );
   }

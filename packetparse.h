@@ -7,6 +7,8 @@ u_int sum_bytes(int num_bytes, u_short * x);
 #define IP_TCP 0x06
 #define IP_UDP 0x11
 #define UHL 8
+#define OPT "-t"
+
 
  typedef struct ethhdr{
       u_char dst_mac[ETHER_MAC];//0
