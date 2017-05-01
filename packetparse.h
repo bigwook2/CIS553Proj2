@@ -72,5 +72,17 @@ typedef struct tcpchk{
       unsigned short dst;
   }udphdr;
 
+typedef enum{ SYN, ACK, SYN_ACK, FIN} conn_state;
+typedef struct tcp_conn{
+    iphdr * init;
+    iphdr * rsp;
+    conn_state cs;
+    int id;
+    struct tcp * next;
+}conn;
+
+
 
 u_short calculate_tcp_checksum(struct iphdr * iphdr, u_short tcp_len, tcphdr* tcp, u_short checksum);
+
+

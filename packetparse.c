@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include "packetparse.h" 
 #include <assert.h>
+#include <stdbool.h>
 
     u_short calculate_tcp_checksum(struct iphdr * iphdr,  u_short tcp_len, tcphdr *tcphdr , u_short checksum){
         u_int r = 0;
