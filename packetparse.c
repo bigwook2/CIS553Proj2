@@ -69,6 +69,46 @@
        return r;
          
     }
+
+bool connection_seen(conn* master, conn* check){
+    bool switched = false;
+    bool is_ma_ca = is_host(&(master->hosta),&(check->hosta));
+    bool is_ma_cb = is_host(&(master->hosta),&(check->hostb));
+    host ca;
+    host cb;
+    if(is_ma_ca){
+        ca = check->hosta;
+        cb = check-> hostb;
+       
+    }else if(is_ma_cb){
+        ca = check -> hostb;
+        cb = check -> hosta;
+        switched = true;
+    }else{
+        return false;
+    }
+    bool match_mb = is_host(&(master->hostb),&cb);
+    if(match_mb){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+
+
+bool is_host(host * master, host* check){
+ unsigned int m_ip = master -> ip;
+ unsigned int m_port = master -> port;
+ unsigned int c_ip = check-> ip; 
+ unsigned int c_port = check -> port; 
+    if( (m_ip == c_ip) && (m_port == c_port) ){
+       return true;
+    }
+   return false;  
+
+}
 int main(int argc, char *argv[] )
 {
   char errbuf[PCAP_ERRBUF_SIZE];

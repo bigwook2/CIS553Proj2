@@ -1,4 +1,5 @@
-void packPacket(char * type, char * source, char * dest, char* ipsource, char* ipdest, int checksum, int payload);
+
+#include <stdbool.h>
 u_int sum_bytes(int num_bytes, u_short * x);
 
 #define ETHER_MAC 6
@@ -71,18 +72,22 @@ typedef struct tcpchk{
       unsigned short src;
       unsigned short dst;
   }udphdr;
+typedef struct host{
+    u_int ip;
+    u_int port;
+}host;
 
 typedef enum{ SYN, ACK, SYN_ACK, FIN} conn_state;
 typedef struct tcp_conn{
-    iphdr * init;
-    iphdr * rsp;
+    host hosta;
+    host hostb;
     conn_state cs;
     int id;
     struct tcp * next;
 }conn;
 
 
-
+bool connection_seen(conn* master, conn* check);
 u_short calculate_tcp_checksum(struct iphdr * iphdr, u_short tcp_len, tcphdr* tcp, u_short checksum);
-
+bool is_host(host* master, host* check);
 
